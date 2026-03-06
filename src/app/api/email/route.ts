@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         }
 
         const resend = new Resend(apiKey);
-        const delegates = getDelegates();
+        const delegates = await getDelegates();
 
         if (delegates.length === 0) {
             return NextResponse.json(

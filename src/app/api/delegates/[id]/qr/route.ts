@@ -10,7 +10,7 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const delegate = getDelegate(id);
+        const delegate = await getDelegate(id);
 
         if (!delegate) {
             return NextResponse.json(

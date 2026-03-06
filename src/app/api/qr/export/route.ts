@@ -7,7 +7,7 @@ const EVENT_DOMAIN = process.env.EVENT_DOMAIN || 'http://localhost:3000';
 
 export async function GET() {
     try {
-        const delegates = getDelegates();
+        const delegates = await getDelegates();
 
         if (delegates.length === 0) {
             return NextResponse.json(

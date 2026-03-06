@@ -1,37 +1,29 @@
-import fs from 'fs';
-import path from 'path';
+import { Redis } from '@upstash/redis';
 import { Delegate, CheckInResult, DelegateStats } from './types';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DATA_FILE = path.join(DATA_DIR, 'delegates.json');
+const redis = new Redis({
+    url: process.env.KV_REST_API_URL!,
+    token: process.env.KV_REST_API_TOKEN!,
+});
 
-function ensureDataDir() {
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
+const DELEGATES_KEY = 'delegates';
+
+export async function getDelegates(): Promise<Delegate[]> {
+    const data = await redis.get<Delegate[]>(DELEGATES_KEY);
+    return data || [];
 }
 
-export function getDelegates(): Delegate[] {
-    ensureDataDir();
-    if (!fs.existsSync(DATA_FILE)) {
-        return [];
-    }
-    const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(raw) as Delegate[];
-}
-
-export function getDelegate(id: string): Delegate | undefined {
-    const delegates = getDelegates();
+export async function getDelegate(id: string): Promise<Delegate | undefined> {
+    const delegates = await getDelegates();
     return delegates.find((d) => d.delegateId === id);
 }
 
-export function saveDelegates(delegates: Delegate[]): void {
-    ensureDataDir();
-    fs.writeFileSync(DATA_FILE, JSON.stringify(delegates, null, 2), 'utf-8');
+export async function saveDelegates(delegates: Delegate[]): Promise<void> {
+    await redis.set(DELEGATES_KEY, delegates);
 }
 
-export function checkInDelegate(id: string): CheckInResult {
-    const delegates = getDelegates();
+export async function checkInDelegate(id: string): Promise<CheckInResult> {
+    const delegates = await getDelegates();
     const delegate = delegates.find((d) => d.delegateId === id);
 
     if (!delegate) {
@@ -54,7 +46,7 @@ export function checkInDelegate(id: string): CheckInResult {
 
     delegate.checkedIn = true;
     delegate.checkedInAt = new Date().toISOString();
-    saveDelegates(delegates);
+    await saveDelegates(delegates);
 
     return {
         success: true,
@@ -64,8 +56,8 @@ export function checkInDelegate(id: string): CheckInResult {
     };
 }
 
-export function getStats(): DelegateStats {
-    const delegates = getDelegates();
+export async function getStats(): Promise<DelegateStats> {
+    const delegates = await getDelegates();
     const total = delegates.length;
     const checkedIn = delegates.filter((d) => d.checkedIn).length;
     return {

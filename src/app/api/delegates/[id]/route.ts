@@ -7,7 +7,7 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const delegate = getDelegate(id);
+        const delegate = await getDelegate(id);
         if (!delegate) {
             return NextResponse.json(
                 { success: false, error: 'Delegate not found' },
@@ -29,7 +29,7 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
-        const result = checkInDelegate(id);
+        const result = await checkInDelegate(id);
 
         if (!result.success) {
             return NextResponse.json(

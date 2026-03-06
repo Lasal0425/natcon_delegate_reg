@@ -10,7 +10,7 @@ export default async function DelegatePage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    const delegate = getDelegate(id);
+    const delegate = await getDelegate(id);
 
     if (!delegate) {
         notFound();

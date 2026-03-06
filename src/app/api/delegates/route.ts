@@ -4,7 +4,7 @@ import { Delegate } from '@/lib/types';
 
 export async function GET() {
     try {
-        const delegates = getDelegates();
+        const delegates = await getDelegates();
         return NextResponse.json({ success: true, data: delegates });
     } catch (error) {
         return NextResponse.json(
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
             };
         });
 
-        saveDelegates(delegates);
+        await saveDelegates(delegates);
 
         return NextResponse.json({
             success: true,

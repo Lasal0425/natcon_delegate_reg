@@ -3,7 +3,7 @@ import { getStats } from '@/lib/delegates';
 
 export async function GET() {
     try {
-        const stats = getStats();
+        const stats = await getStats();
         return NextResponse.json({ success: true, data: stats });
     } catch (error) {
         return NextResponse.json(
