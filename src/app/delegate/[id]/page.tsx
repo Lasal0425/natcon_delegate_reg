@@ -19,7 +19,7 @@ export default async function DelegatePage({
     return (
         <div className="page-container delegate-page">
             <nav className="top-nav">
-                <Link href="/" className="nav-back">← Home</Link>
+                <Link href="/scanner" className="nav-back">← Scanner</Link>
                 <h1 className="nav-title">Delegate Info</h1>
                 <div style={{ width: 60 }} />
             </nav>
@@ -56,6 +56,12 @@ export default async function DelegatePage({
                             </span>
                         </div>
                     </div>
+                </div>
+
+                <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
+                    <Link href="/scanner" className="btn btn-primary btn-large">
+                        📷 Back to QR Scanner
+                    </Link>
                 </div>
             </div>
         </div>

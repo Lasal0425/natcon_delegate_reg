@@ -137,7 +137,7 @@ export default function AdminPage() {
     };
 
     return (
-        <div className="page-container">
+        <div className="page-container admin-page">
             <nav className="top-nav">
                 <Link href="/" className="nav-back">← Home</Link>
                 <h1 className="nav-title">Admin Panel</h1>
@@ -247,6 +247,40 @@ export default function AdminPage() {
                         )}
                     </section>
                 )}
+
+                {/* Always-visible QR & Email section for JSON delegates */}
+                <section className="admin-section">
+                    <h2 className="section-title">📲 QR Codes & Emails</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
+                        Generate QR codes or send emails for all delegates currently in the system (including those added directly to delegates.json).
+                    </p>
+                    <div className="action-buttons">
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleDownloadQR}
+                            disabled={downloading}
+                        >
+                            {downloading ? '⏳ Generating ZIP...' : '📥 Download All QR Codes (ZIP)'}
+                        </button>
+
+                        <button
+                            className="btn btn-accent"
+                            onClick={handleSendEmails}
+                            disabled={sendingEmails}
+                        >
+                            {sendingEmails ? '⏳ Sending...' : '📧 Send Emails to All Delegates'}
+                        </button>
+                    </div>
+
+                    {emailResult && (
+                        <div className="alert alert-info" style={{ marginTop: 16 }}>
+                            <p>📧 Emails sent: <strong>{emailResult.sent}</strong></p>
+                            {emailResult.failed > 0 && (
+                                <p>❌ Failed: <strong>{emailResult.failed}</strong></p>
+                            )}
+                        </div>
+                    )}
+                </section>
             </div>
         </div>
     );

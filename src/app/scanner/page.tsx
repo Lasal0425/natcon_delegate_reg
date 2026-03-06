@@ -109,10 +109,13 @@ export default function ScannerPage() {
     }, [startScanner]);
 
     useEffect(() => {
+        // Auto-start scanner when page loads
+        startScanner();
         return () => {
             stopScanner();
         };
-    }, [stopScanner]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className="page-container scanner-page">
@@ -154,7 +157,7 @@ export default function ScannerPage() {
                         </div>
                         <DelegateCard delegate={delegate} />
                         <button className="btn btn-primary btn-large" onClick={resetScanner}>
-                            Scan Next
+                            📷 Scan Next Delegate
                         </button>
                     </div>
                 )}
@@ -173,7 +176,7 @@ export default function ScannerPage() {
                         </div>
                         <DelegateCard delegate={delegate} />
                         <button className="btn btn-primary btn-large" onClick={resetScanner}>
-                            Scan Next
+                            📷 Scan Next Delegate
                         </button>
                     </div>
                 )}
