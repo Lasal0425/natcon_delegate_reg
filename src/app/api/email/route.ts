@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
                         {
                             filename: `${delegate.delegateId}-qrcode.png`,
                             content: base64Data,
-                            content_type: 'image/png',
+                            contentType: 'image/png',
                         },
                     ],
                 });
