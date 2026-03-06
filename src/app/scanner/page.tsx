@@ -65,17 +65,31 @@ export default function ScannerPage() {
     const startScanner = useCallback(async () => {
         if (!scannerRef.current) return;
 
+        // Ensure the container has dimensions before starting (fixes iOS Safari)
+        scannerRef.current.style.minHeight = '300px';
+        scannerRef.current.style.width = '100%';
+
         try {
             const { Html5Qrcode } = await import('html5-qrcode');
-            const scanner = new Html5Qrcode('qr-reader');
+            const scanner = new Html5Qrcode('qr-reader', {
+                verbose: false,
+                formatsToSupport: [0], // QR_CODE only
+            });
             html5QrScannerRef.current = scanner;
+
+            const qrboxSize = Math.min(250, Math.floor(window.innerWidth * 0.6));
 
             await scanner.start(
                 { facingMode: 'environment' },
                 {
                     fps: 10,
-                    qrbox: { width: 250, height: 250 },
+                    qrbox: { width: qrboxSize, height: qrboxSize },
                     aspectRatio: 1,
+                    videoConstraints: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                    },
                 },
                 (decodedText) => {
                     scanner.stop().catch(() => { });
@@ -84,9 +98,22 @@ export default function ScannerPage() {
                 },
                 () => { }
             );
+
+            // Force video element to show on iOS Safari
+            const videoEl = scannerRef.current?.querySelector('video');
+            if (videoEl) {
+                videoEl.setAttribute('playsinline', 'true');
+                videoEl.setAttribute('webkit-playsinline', 'true');
+                videoEl.style.width = '100%';
+                videoEl.style.height = 'auto';
+                videoEl.style.objectFit = 'cover';
+                videoEl.style.display = 'block';
+            }
+
             setScannerActive(true);
         } catch (err) {
-            setErrorMsg('Camera access denied or not available');
+            console.error('Scanner error:', err);
+            setErrorMsg('Camera access denied or not available. Please check your browser settings.');
             setScanState('error');
         }
     }, [processUrl]);

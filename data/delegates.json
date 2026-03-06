@@ -7,7 +7,6 @@
     "entity": "AIESEC in IIT",
     "foodPreference": "Vegetarian",
     "delegatePack": false,
-    "checkedIn": true,
-    "checkedInAt": "2026-03-06T05:09:11.000Z"
+    "checkedIn": false
   }
-]
+] 
