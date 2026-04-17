@@ -39,7 +39,14 @@ export default function DashboardPage() {
     }, []);
 
     const handleExport = () => {
-        const dataToExport = delegates.map(d => {
+        const checkedDelegates = delegates.filter(d => d.checkedIn);
+
+        if (checkedDelegates.length === 0) {
+            alert('No delegates have checked in yet.');
+            return;
+        }
+
+        const dataToExport = checkedDelegates.map(d => {
             const fName = d.firstName || d.name.split(' ')[0] || '';
             const lName = d.lastName || (d.name.includes(' ') ? d.name.substring(d.name.indexOf(' ') + 1) : '');
             
@@ -66,13 +73,13 @@ export default function DashboardPage() {
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Delegates");
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Checked-In Delegates");
         
         // Auto-size columns (rough approximation)
         const maxWidths = Object.keys(dataToExport[0] || {}).map(key => ({ wch: key.length + 5 }));
         worksheet['!cols'] = maxWidths;
 
-        XLSX.writeFile(workbook, `Delegates_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.writeFile(workbook, `Checked_In_Delegates_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     useEffect(() => {
@@ -119,9 +126,9 @@ export default function DashboardPage() {
                     <button 
                         className="btn btn-small btn-secondary btn-export" 
                         onClick={handleExport}
-                        title="Export to Excel"
+                        title="Export Checked-in Delegates to Excel"
                     >
-                        📊 Export Excel
+                        📊 Export Checked-in
                     </button>
                     <button 
                         className="btn btn-small btn-ghost" 
