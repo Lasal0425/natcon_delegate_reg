@@ -26,19 +26,71 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const delegates: Delegate[] = rawDelegates.map((row, index) => {
+        const delegates: Delegate[] = rawDelegates.map((rawRow, index) => {
             const id = `DEL${String(index + 1).padStart(3, '0')}`;
+            
+            // Advanced fuzzy matcher: finds a column that contains ALL required keywords
+            const find = (keywords: string[]) => {
+                const keys = Object.keys(rawRow);
+                const normalizedKeywords = keywords.map(k => k.toLowerCase().replace(/[^a-z0-9]/g, ''));
+                
+                const foundKey = keys.find(k => {
+                    const nk = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return normalizedKeywords.every(word => nk.includes(word));
+                });
+                return foundKey ? rawRow[foundKey] : undefined;
+            };
+
+            const firstName = find(['First', 'Name']) || find(['firstName']) || '';
+            const lastName = find(['Last', 'Name']) || find(['lastName']) || '';
+            const fullName = find(['Full', 'Name']) || find(['name']) || `${firstName} ${lastName}`.trim() || '';
+
+            const parseBoolean = (val: any) => {
+                const s = String(val || '').toLowerCase().trim();
+                return ['yes', 'true', '1', 'y', 'checked', 'TRUE'].includes(s);
+            };
+            const parseNum = (val: any) => {
+                const s = String(val || '0').replace(/[^0-9]/g, '');
+                return parseInt(s || '0', 10);
+            };
+
             return {
                 delegateId: id,
-                name: row.name || row['Full Name'] || row['full_name'] || '',
-                email: row.email || row['Email'] || row['email_address'] || '',
-                age: parseInt(row.age || row['Age'] || '0', 10),
-                entity: row.entity || row['Entity'] || row['Entity (AIESEC Local Committee)'] || row['AIESEC Local Committee'] || '',
-                foodPreference: row.foodPreference || row['Food Preference'] || row['food_preference'] || '',
-                delegatePack: ['yes', 'true', '1'].includes(
-                    (row.delegatePack || row['Delegate Pack'] || row['delegate_pack'] || 'no').toLowerCase().trim()
-                ),
+                name: fullName,
+                firstName: firstName,
+                lastName: lastName,
+                email: find(['email']) || '',
+                age: parseNum(find(['age'])),
+                entity: find(['Entity']) || '',
+                role: find(['Role']) || find(['Position']) || '',
+                foodPreference: find(['Food', 'Preference']) || '',
+                delegatePack: parseBoolean(find(['Merch', 'Pack'])) || parseBoolean(find(['Delegate', 'Pack'])),
+                contactNumber: find(['Contact', 'Number']) || find(['phone']) || '',
                 checkedIn: false,
+                
+                merchPack: {
+                    purchased: parseBoolean(find(['Merch', 'Pack'])) && !find(['Merch', 'Pack'])?.toString().toLowerCase().includes('size'),
+                    size: find(['Merch', 'Pack', 'Size']) || '',
+                    quantity: parseNum(find(['Merch', 'Pack', 'Qty']) || find(['Merch', 'Pack', 'Quantity']))
+                },
+                crewNeck: {
+                    purchased: parseBoolean(find(['Crew', 'Neck'])),
+                    size: find(['Crew', 'Neck', 'Size']) || '',
+                    quantity: parseNum(find(['Crew', 'Neck', 'Qty']) || find(['Crew', 'Neck', 'Quantity']))
+                },
+                drawstringBag: {
+                    purchased: parseBoolean(find(['Drawstring', 'Bag'])),
+                    quantity: parseNum(find(['Drawstring', 'Bag', 'Qty']) || find(['Drawstring', 'Bag', 'Quantity']))
+                },
+                pouch: {
+                    purchased: parseBoolean(find(['Pouch'])),
+                    quantity: parseNum(find(['Pouch', 'Qty']) || find(['Pouch', 'Quantity']))
+                },
+                radiumWristBand: {
+                    purchased: parseBoolean(find(['Radium', 'Wrist', 'Band'])) || parseBoolean(find(['Wrist', 'Band'])),
+                    quantity: parseNum(find(['Wrist', 'Band', 'Qty']) || find(['Wrist', 'Band', 'Quantity']))
+                },
+                totalItems: parseNum(find(['Total', 'Item', 'Count']) || find(['Total']))
             };
         });
 

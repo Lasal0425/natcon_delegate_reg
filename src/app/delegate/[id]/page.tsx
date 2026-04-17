@@ -34,27 +34,39 @@ export default async function DelegatePage({
                     <h2 className="delegate-name">{delegate.name}</h2>
                     <div className="delegate-details">
                         <div className="detail-row">
-                            <span className="detail-label">📧 Email</span>
-                            <span className="detail-value">{delegate.email}</span>
-                        </div>
-                        <div className="detail-row">
-                            <span className="detail-label">🎂 Age</span>
-                            <span className="detail-value">{delegate.age}</span>
-                        </div>
-                        <div className="detail-row">
                             <span className="detail-label">🏢 Entity</span>
                             <span className="detail-value">{delegate.entity}</span>
                         </div>
                         <div className="detail-row">
-                            <span className="detail-label">🍽️ Food Preference</span>
-                            <span className="detail-value">{delegate.foodPreference}</span>
-                        </div>
-                        <div className="detail-row">
-                            <span className="detail-label">🎒 Delegate Pack</span>
-                            <span className={`detail-value pack-badge ${delegate.delegatePack ? 'pack-yes' : 'pack-no'}`}>
-                                {delegate.delegatePack ? 'Yes ✓' : 'No ✗'}
+                            <span className="detail-label">🎒 Merch Pack</span>
+                            <span className={`detail-value pack-badge ${delegate.merchPack?.purchased ? 'pack-yes' : 'pack-no'}`}>
+                                {delegate.merchPack?.purchased ? `${delegate.merchPack.size} (x${delegate.merchPack.quantity})` : 'No'}
                             </span>
                         </div>
+                        {delegate.crewNeck?.purchased && (
+                            <div className="detail-row">
+                                <span className="detail-label">👕 Crew Neck</span>
+                                <span className="detail-value">{delegate.crewNeck.size} (x{delegate.crewNeck.quantity})</span>
+                            </div>
+                        )}
+                        {delegate.drawstringBag?.purchased && (
+                            <div className="detail-row">
+                                <span className="detail-label">🎒 Drawstring Bag</span>
+                                <span className="detail-value">x{delegate.drawstringBag.quantity}</span>
+                            </div>
+                        )}
+                        {delegate.pouch?.purchased && (
+                            <div className="detail-row">
+                                <span className="detail-label">👝 Pouch</span>
+                                <span className="detail-value">x{delegate.pouch.quantity}</span>
+                            </div>
+                        )}
+                        {delegate.radiumWristBand?.purchased && (
+                            <div className="detail-row">
+                                <span className="detail-label">⌚ Radium Wrist Band</span>
+                                <span className="detail-value">x{delegate.radiumWristBand.quantity}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

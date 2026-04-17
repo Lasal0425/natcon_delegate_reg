@@ -25,7 +25,9 @@ export async function GET() {
                 width: 400,
                 margin: 2,
             });
-            zip.file(`${delegate.delegateId}_${delegate.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`, qrBuffer);
+            const safeName = delegate.name.replace(/[^a-zA-Z0-9]/g, '_');
+            const safeEntity = delegate.entity.replace(/[^a-zA-Z0-9]/g, '_');
+            zip.file(`${delegate.delegateId}_${safeName}_${safeEntity}.png`, qrBuffer);
         }
 
         const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });

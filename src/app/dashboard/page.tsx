@@ -3,17 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
-interface Delegate {
-    delegateId: string;
-    name: string;
-    email: string;
-    age: number;
-    entity: string;
-    foodPreference: string;
-    delegatePack: boolean;
-    checkedIn: boolean;
-    checkedInAt?: string;
-}
+import { Delegate } from '@/lib/types';
+import * as XLSX from 'xlsx';
 
 interface Stats {
     total: number;
@@ -47,6 +38,43 @@ export default function DashboardPage() {
         }
     }, []);
 
+    const handleExport = () => {
+        const dataToExport = delegates.map(d => {
+            const fName = d.firstName || d.name.split(' ')[0] || '';
+            const lName = d.lastName || (d.name.includes(' ') ? d.name.substring(d.name.indexOf(' ') + 1) : '');
+            
+            return {
+                'Delegate ID': d.delegateId,
+                'First Name': fName,
+                'Last Name': lName,
+                'Entity': d.entity,
+                'Role': d.role || '-',
+                'Email': d.email,
+                'Contact': d.contactNumber || '-',
+                'Age': d.age,
+                'Food Preference': d.foodPreference,
+                'Merch Pack': d.merchPack?.purchased ? `${d.merchPack.size} (x${d.merchPack.quantity})` : '-',
+                'Crew Neck': d.crewNeck?.purchased ? `${d.crewNeck.size} (x${d.crewNeck.quantity})` : '-',
+                'Drawstring Bag': d.drawstringBag?.purchased ? `x${d.drawstringBag.quantity}` : '-',
+                'Pouch': d.pouch?.purchased ? `x${d.pouch.quantity}` : '-',
+                'Radium Wrist Band': d.radiumWristBand?.purchased ? `x${d.radiumWristBand.quantity}` : '-',
+                'Total Add-ons': d.totalItems || '-',
+                'Status': d.checkedIn ? 'Checked In' : 'Pending',
+                'Checked In At': d.checkedInAt ? new Date(d.checkedInAt).toLocaleString() : '-'
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Delegates");
+        
+        // Auto-size columns (rough approximation)
+        const maxWidths = Object.keys(dataToExport[0] || {}).map(key => ({ wch: key.length + 5 }));
+        worksheet['!cols'] = maxWidths;
+
+        XLSX.writeFile(workbook, `Delegates_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     useEffect(() => {
         fetchData();
         const interval = setInterval(fetchData, 10000); // Auto-refresh every 10s
@@ -58,6 +86,7 @@ export default function DashboardPage() {
             search === '' ||
             d.name.toLowerCase().includes(search.toLowerCase()) ||
             d.entity.toLowerCase().includes(search.toLowerCase()) ||
+            (d.role && d.role.toLowerCase().includes(search.toLowerCase())) ||
             d.delegateId.toLowerCase().includes(search.toLowerCase());
 
         const matchesFilter =
@@ -82,9 +111,26 @@ export default function DashboardPage() {
     return (
         <div className="page-container">
             <nav className="top-nav">
-                <Link href="/" className="nav-back">← Home</Link>
-                <h1 className="nav-title">Dashboard</h1>
-                <button className="btn btn-small btn-ghost" onClick={fetchData}>🔄</button>
+                <div className="nav-left">
+                    <Link href="/" className="nav-back">← Home</Link>
+                    <h1 className="nav-title">Dashboard</h1>
+                </div>
+                <div className="nav-actions">
+                    <button 
+                        className="btn btn-small btn-secondary btn-export" 
+                        onClick={handleExport}
+                        title="Export to Excel"
+                    >
+                        📊 Export Excel
+                    </button>
+                    <button 
+                        className="btn btn-small btn-ghost" 
+                        onClick={fetchData}
+                        title="Refresh data"
+                    >
+                        🔄
+                    </button>
+                </div>
             </nav>
 
             <div className="dashboard-content">
@@ -126,7 +172,7 @@ export default function DashboardPage() {
                 <div className="search-bar">
                     <input
                         type="text"
-                        placeholder="🔍 Search by name, entity, or ID..."
+                        placeholder="🔍 Search by name, entity, role, or ID..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="search-input"
@@ -159,28 +205,62 @@ export default function DashboardPage() {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Name</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
                                 <th>Entity</th>
-                                <th>Food</th>
-                                <th>Pack</th>
+                                <th>Role</th>
+                                <th>Merch Pack</th>
+                                <th>Crew Neck</th>
+                                <th>Drawstring</th>
+                                <th>Pouch</th>
+                                <th>Wrist Band</th>
+                                <th>Total</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredDelegates.map((d) => (
-                                <tr key={d.delegateId} className={d.checkedIn ? 'row-checked' : ''}>
-                                    <td className="cell-id">{d.delegateId}</td>
-                                    <td className="cell-name">{d.name}</td>
-                                    <td>{d.entity}</td>
-                                    <td>{d.foodPreference}</td>
-                                    <td>{d.delegatePack ? '✓' : '✗'}</td>
-                                    <td>
-                                        <span className={`status-badge ${d.checkedIn ? 'badge-checked' : 'badge-pending'}`}>
-                                            {d.checkedIn ? '✅ In' : '⏳'}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
+                            {filteredDelegates.map((d) => {
+                                const fName = d.firstName || d.name.split(' ')[0] || '';
+                                const lName = d.lastName || (d.name.includes(' ') ? d.name.substring(d.name.indexOf(' ') + 1) : '');
+                                return (
+                                    <tr key={d.delegateId} className={d.checkedIn ? 'row-checked' : ''}>
+                                        <td className="cell-id">{d.delegateId}</td>
+                                        <td className="cell-name">{fName}</td>
+                                        <td className="cell-name">{lName}</td>
+                                        <td>{d.entity}</td>
+                                        <td className="cell-role">{d.role || '-'}</td>
+                                        <td className="cell-merch">
+                                            {d.merchPack?.purchased ? (
+                                                <span className="addon-tag tag-pack">
+                                                    {d.merchPack.size} (x{d.merchPack.quantity})
+                                                </span>
+                                            ) : '-'}
+                                        </td>
+                                        <td className="cell-merch">
+                                            {d.crewNeck?.purchased ? (
+                                                <span className="addon-tag tag-crew">
+                                                    {d.crewNeck.size} (x{d.crewNeck.quantity})
+                                                </span>
+                                            ) : '-'}
+                                        </td>
+                                        <td className="cell-qty">
+                                            {d.drawstringBag?.purchased ? `x${d.drawstringBag.quantity}` : '-'}
+                                        </td>
+                                        <td className="cell-qty">
+                                            {d.pouch?.purchased ? `x${d.pouch.quantity}` : '-'}
+                                        </td>
+                                        <td className="cell-qty">
+                                            {d.radiumWristBand?.purchased ? `x${d.radiumWristBand.quantity}` : '-'}
+                                        </td>
+                                        <td className="cell-total">{d.totalItems || '-'}</td>
+                                        <td>
+                                            <span className={`status-badge ${d.checkedIn ? 'badge-checked' : 'badge-pending'}`}>
+                                                {d.checkedIn ? '✅ In' : '⏳'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                     {filteredDelegates.length === 0 && (

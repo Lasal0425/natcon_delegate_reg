@@ -3,16 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 
-interface DelegateResult {
-    delegateId: string;
-    name: string;
-    age: number;
-    entity: string;
-    foodPreference: string;
-    delegatePack: boolean;
-    checkedIn: boolean;
-    checkedInAt?: string;
-}
+import { Delegate } from '@/lib/types';
+
+type DelegateResult = Delegate;
 
 type ScanState = 'idle' | 'scanning' | 'success' | 'duplicate' | 'error';
 
@@ -233,25 +226,33 @@ function DelegateCard({ delegate }: { delegate: DelegateResult }) {
             <h3 className="delegate-name">{delegate.name}</h3>
             <div className="delegate-details">
                 <div className="detail-row">
-                    <span className="detail-label">🎂 Age</span>
-                    <span className="detail-value">{delegate.age}</span>
-                </div>
-                <div className="detail-row">
                     <span className="detail-label">🏢 Entity</span>
                     <span className="detail-value">{delegate.entity}</span>
                 </div>
                 <div className="detail-row">
-                    <span className="detail-label">🍽️ Food</span>
-                    <span className="detail-value food-badge" data-pref={delegate.foodPreference.toLowerCase().includes('veg') && !delegate.foodPreference.toLowerCase().includes('non') ? 'veg' : 'nonveg'}>
-                        {delegate.foodPreference}
+                    <span className="detail-label">🎒 Merch Pack</span>
+                    <span className={`detail-value pack-badge ${delegate.merchPack?.purchased ? 'pack-yes' : 'pack-no'}`}>
+                        {delegate.merchPack?.purchased ? `${delegate.merchPack.size} (x${delegate.merchPack.quantity})` : 'No'}
                     </span>
                 </div>
-                <div className="detail-row">
-                    <span className="detail-label">🎒 Delegate Pack</span>
-                    <span className={`detail-value pack-badge ${delegate.delegatePack ? 'pack-yes' : 'pack-no'}`}>
-                        {delegate.delegatePack ? 'Yes ✓' : 'No ✗'}
-                    </span>
-                </div>
+                {delegate.drawstringBag?.purchased && (
+                    <div className="detail-row">
+                        <span className="detail-label">🎒 Drawstring Bag</span>
+                        <span className="detail-value">x{delegate.drawstringBag.quantity}</span>
+                    </div>
+                )}
+                {delegate.pouch?.purchased && (
+                    <div className="detail-row">
+                        <span className="detail-label">👝 Pouch</span>
+                        <span className="detail-value">x{delegate.pouch.quantity}</span>
+                    </div>
+                )}
+                {delegate.radiumWristBand?.purchased && (
+                    <div className="detail-row">
+                        <span className="detail-label">⌚ Radium Wrist Band</span>
+                        <span className="detail-value">x{delegate.radiumWristBand.quantity}</span>
+                    </div>
+                )}
             </div>
         </div>
     );
