@@ -58,7 +58,6 @@ export default function DashboardPage() {
                 'Role': d.role || '-',
                 'Email': d.email,
                 'Contact': d.contactNumber || '-',
-                'Age': d.age,
                 'Food Preference': d.foodPreference,
                 'Merch Pack': d.merchPack?.purchased ? `${d.merchPack.size} (x${d.merchPack.quantity})` : '-',
                 'Crew Neck': d.crewNeck?.purchased ? `${d.crewNeck.size} (x${d.crewNeck.quantity})` : '-',
