@@ -253,6 +253,14 @@ function DelegateCard({ delegate }: { delegate: DelegateResult }) {
                         <span className="detail-value">x{delegate.radiumWristBand.quantity}</span>
                     </div>
                 )}
+                {delegate.crewNeck?.purchased && (
+                    <div className="detail-row">
+                        <span className="detail-label">👕 Crew Neck</span>
+                        <span className="detail-value">
+                            {delegate.crewNeck.size} (x{delegate.crewNeck.quantity})
+                        </span>
+                    </div>
+                )}
             </div>
         </div>
     );
